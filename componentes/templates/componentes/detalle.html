@@ -1,0 +1,100 @@
+
+{% extends "componentes/base.html" %}
+
+{% block contenido %}
+
+<a href="{% url 'inicio' %}" class="muted">
+    ← Volver al inventario
+</a>
+
+<h1>{{ componente.descripcion }}</h1>
+
+<div class="card">
+    <h2>Información del componente</h2>
+
+    <p>
+        <strong>ID:</strong>
+        {{ componente.id }}
+    </p>
+
+    <p>
+        <strong>Código SAP:</strong>
+        {{ componente.codigo_sap|default:"Sin identificar" }}
+    </p>
+
+    <p>
+        <strong>Número de serie:</strong>
+        {{ componente.numero_serie|default:"Sin identificar" }}
+    </p>
+
+    <p>
+        <strong>Ubicación actual:</strong>
+        {{ componente.ubicacion|default:"Sin asignar" }}
+    </p>
+
+    <p>
+        <strong>Estado:</strong>
+        {{ componente.estado }}
+    </p>
+</div>
+
+<div class="card">
+    <h2>Identificación QR</h2>
+
+    <img
+        class="qr"
+        src="{% url 'generar_qr' componente.id %}"
+        alt="Código QR del componente"
+    >
+
+    <p class="muted">
+        Identificador único de PatioTrace
+    </p>
+</div>
+
+{% if perms.componentes.add_movimiento %}
+<div class="card">
+    <h2>Gestión de ubicación</h2>
+
+    <a
+        href="{% url 'registrar_movimiento' componente.id %}"
+        class="btn"
+    >
+        Registrar traslado
+    </a>
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Historial de movimientos</h2>
+
+    {% for movimiento in movimientos %}
+        <div class="item">
+            <strong>
+                {{ movimiento.ubicacion_origen|default:"Sin asignar" }}
+                →
+                {{ movimiento.ubicacion_destino }}
+            </strong>
+
+            <p class="muted">
+                Fecha:
+                {{ movimiento.fecha_movimiento|date:"d/m/Y H:i" }}
+                <br>
+                Usuario:
+                {{ movimiento.usuario.username }}
+            </p>
+
+            {% if movimiento.observacion %}
+                <p>
+                    {{ movimiento.observacion }}
+                </p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p class="muted">
+            Este componente aún no tiene movimientos registrados.
+        </p>
+    {% endfor %}
+</div>
+
+{% endblock %}

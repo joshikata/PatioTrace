@@ -1,0 +1,72 @@
+
+{% extends "componentes/base.html" %}
+
+{% block contenido %}
+
+<h1>Panel de componentes</h1>
+
+<p class="muted">
+    Gestión y trazabilidad de componentes de patio
+</p>
+
+{% if perms.componentes.add_componente %}
+    <p>
+        <a href="{% url 'registrar_componente' %}"
+           class="btn">
+            + Registrar componente
+        </a>
+    </p>
+{% endif %}
+
+<div class="card">
+    <h2>Inventario</h2>
+    <h1>{{ total }}</h1>
+    <p class="muted">Componentes registrados</p>
+</div>
+
+<div class="card">
+    <h2>Buscar componentes</h2>
+
+    <form method="get">
+        <input
+            type="search"
+            name="q"
+            placeholder="Código SAP, serie o descripción"
+            value="{{ busqueda }}"
+        >
+
+        <br><br>
+
+        <button class="btn" type="submit">
+            Buscar
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Componentes registrados</h2>
+
+    {% for componente in componentes %}
+        <div class="item">
+            <strong>{{ componente.descripcion }}</strong>
+
+            <p class="muted">
+                SAP:
+                {{ componente.codigo_sap|default:"Sin identificar" }}
+                <br>
+                Ubicación:
+                {{ componente.ubicacion|default:"Sin asignar" }}
+                <br>
+                Estado: {{ componente.estado }}
+            </p>
+
+            <a href="{% url 'detalle_componente' componente.id %}">
+                Ver componente →
+            </a>
+        </div>
+    {% empty %}
+        <p>No se encontraron componentes.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

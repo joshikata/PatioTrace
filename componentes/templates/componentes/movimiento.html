@@ -1,0 +1,36 @@
+
+{% extends "componentes/base.html" %}
+
+{% block contenido %}
+
+<a href="{% url 'detalle_componente' componente.id %}"
+   class="muted">
+    ← Volver al componente
+</a>
+
+<h1>Registrar movimiento</h1>
+
+<div class="card">
+    <h2>{{ componente.descripcion }}</h2>
+
+    <p>
+        <strong>Ubicación actual:</strong>
+        {{ componente.ubicacion|default:"Sin asignar" }}
+    </p>
+</div>
+
+<div class="card">
+    <h2>Nuevo traslado</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {{ formulario.as_p }}
+
+        <button type="submit" class="btn">
+            Confirmar movimiento
+        </button>
+    </form>
+</div>
+
+{% endblock %}

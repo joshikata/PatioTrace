@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>PatioTrace</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #101827;
+            color: #f8fafc;
+        }
+
+        header {
+            background: #172338;
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .logo {
+            color: #60a5fa;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: #202f46;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background: #101827;
+            color: white;
+            font-size: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 18px;
+            background: #2563eb;
+            color: white;
+            border: 0;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .item {
+            padding: 16px 0;
+            border-bottom: 1px solid #475569;
+        }
+
+        .item a {
+            color: #93c5fd;
+        }
+
+        .muted {
+            color: #a6b5cc;
+        }
+
+        .qr {
+            max-width: 220px;
+            width: 100%;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .errorlist {
+            color: #fca5a5;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a class="logo" href="{% url 'inicio' %}">
+            ▣ PatioTrace
+        </a>
+    </header>
+
+    <main>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="card" role="status">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block contenido %}
+        {% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,30 @@
+
+{% extends "componentes/base.html" %}
+
+{% block contenido %}
+
+<a href="{% url 'inicio' %}" class="muted">
+    ← Volver al inventario
+</a>
+
+<h1>Registrar componente</h1>
+
+<p class="muted">
+    Ingresa la información disponible.
+</p>
+
+<div class="card">
+
+    <form method="post">
+        {% csrf_token %}
+
+        {{ formulario.as_p }}
+
+        <button type="submit" class="btn">
+            Guardar componente
+        </button>
+    </form>
+
+</div>
+
+{% endblock %}

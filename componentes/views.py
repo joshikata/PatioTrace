@@ -1,13 +1,109 @@
+
 import io
 import qrcode
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.db import DatabaseError
+from django.db.models import Q
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import (
+    get_object_or_404,
+    redirect,
+    render
+)
 from django.urls import reverse
 
+from .forms import ComponenteForm, MovimientoForm
 from .models import Componente
+from .services import trasladar_componente
 
 
+@login_required
+def inicio(request):
+    busqueda = request.GET.get("q", "").strip()
+
+    componentes = Componente.objects.all().order_by(
+        "-fecha_registro"
+    )
+
+    total = componentes.count()
+
+    if busqueda:
+        componentes = componentes.filter(
+            Q(descripcion__icontains=busqueda)
+            | Q(codigo_sap__icontains=busqueda)
+            | Q(numero_serie__icontains=busqueda)
+        )
+
+    return render(
+        request,
+        "componentes/inicio.html",
+        {
+            "componentes": componentes,
+            "total": total,
+            "busqueda": busqueda,
+        }
+    )
+
+
+@login_required
+def registrar_componente(request):
+    if not request.user.has_perm(
+        "componentes.add_componente"
+    ):
+        raise PermissionDenied
+
+    if request.method == "POST":
+        formulario = ComponenteForm(request.POST)
+
+        if formulario.is_valid():
+            componente = formulario.save()
+
+            messages.success(
+                request,
+                "Componente registrado correctamente."
+            )
+
+            return redirect(
+                "detalle_componente",
+                componente_id=componente.id
+            )
+    else:
+        formulario = ComponenteForm()
+
+    return render(
+        request,
+        "componentes/registrar.html",
+        {"formulario": formulario}
+    )
+
+
+@login_required
+def detalle_componente(request, componente_id):
+    componente = get_object_or_404(
+        Componente,
+        id=componente_id
+    )
+
+    movimientos = (
+        componente.movimientos
+        .select_related("usuario")
+        .order_by("-fecha_movimiento")
+    )
+
+    return render(
+        request,
+        "componentes/detalle.html",
+        {
+            "componente": componente,
+            "movimientos": movimientos
+        }
+    )
+
+
+@login_required
 def generar_qr(request, componente_id):
     componente = get_object_or_404(
         Componente,
@@ -25,7 +121,6 @@ def generar_qr(request, componente_id):
 
     imagen = io.BytesIO()
     qr.save(imagen, format="PNG")
-    imagen.seek(0)
 
     return HttpResponse(
         imagen.getvalue(),
@@ -33,19 +128,65 @@ def generar_qr(request, componente_id):
     )
 
 
-def detalle_componente(request, componente_id):
+@login_required
+def registrar_movimiento(request, componente_id):
+    if not request.user.has_perm(
+        "componentes.add_movimiento"
+    ):
+        raise PermissionDenied
+
     componente = get_object_or_404(
         Componente,
         id=componente_id
     )
 
-    return HttpResponse(
-        f"""
-        <h1>{componente.descripcion}</h1>
-        <p><b>Codigo SAP:</b> {componente.codigo_sap}</p>
-        <p><b>Numero de serie:</b> {componente.numero_serie}</p>
-        <p><b>Ubicacion:</b> {componente.ubicacion}</p>
-        <p><b>Estado:</b> {componente.estado}</p>
-        <p><b>Fecha de registro:</b> {componente.fecha_registro}</p>
-        """
+    if request.method == "POST":
+        formulario = MovimientoForm(request.POST)
+
+        if formulario.is_valid():
+            try:
+                trasladar_componente(
+                    componente_id=componente.id,
+                    destino=formulario.cleaned_data[
+                        "ubicacion_destino"
+                    ],
+                    usuario=request.user,
+                    observacion=formulario.cleaned_data[
+                        "observacion"
+                    ]
+                )
+
+            except ValueError as error:
+                formulario.add_error(
+                    "ubicacion_destino",
+                    str(error)
+                )
+
+            except DatabaseError:
+                formulario.add_error(
+                    None,
+                    "No se pudo registrar el movimiento."
+                )
+
+            else:
+                messages.success(
+                    request,
+                    "Movimiento registrado correctamente."
+                )
+
+                return redirect(
+                    "detalle_componente",
+                    componente_id=componente.id
+                )
+
+    else:
+        formulario = MovimientoForm()
+
+    return render(
+        request,
+        "componentes/movimiento.html",
+        {
+            "componente": componente,
+            "formulario": formulario
+        }
     )
