@@ -1,33 +1,38 @@
-
 {% extends "componentes/base.html" %}
+
+{% block titulo %}Registrar movimiento · PatioTrace{% endblock %}
 
 {% block contenido %}
 
-<a href="{% url 'detalle_componente' componente.id %}"
-   class="muted">
-    ← Volver al componente
+<a href="{% url 'detalle_componente' componente.id %}" class="volver">
+    <svg class="icono" aria-hidden="true"><use href="#i-atras"/></svg>
+    Volver al componente
 </a>
 
-<h1>Registrar movimiento</h1>
-
-<div class="card">
-    <h2>{{ componente.descripcion }}</h2>
-
-    <p>
-        <strong>Ubicación actual:</strong>
-        {{ componente.ubicacion|default:"Sin asignar" }}
-    </p>
+<div class="page-head">
+    <h1>Registrar movimiento</h1>
 </div>
 
-<div class="card">
-    <h2>Nuevo traslado</h2>
+<div class="card form-card">
+    <h2><svg class="icono" aria-hidden="true"><use href="#i-caja"/></svg> {{ componente.descripcion }}</h2>
+    <dl class="datos">
+        <div>
+            <dt>Ubicación actual</dt>
+            <dd>{{ componente.ubicacion|default:"Sin asignar" }}</dd>
+        </div>
+    </dl>
+</div>
+
+<div class="card form-card">
+    <h2><svg class="icono" aria-hidden="true"><use href="#i-mov"/></svg> Nuevo traslado</h2>
 
     <form method="post">
         {% csrf_token %}
 
-        {{ formulario.as_p }}
+        {% include "componentes/_campos.html" %}
 
-        <button type="submit" class="btn">
+        <button type="submit" class="btn btn-grande">
+            <svg class="icono" aria-hidden="true"><use href="#i-check"/></svg>
             Confirmar movimiento
         </button>
     </form>

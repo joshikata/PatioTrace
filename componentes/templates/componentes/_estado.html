@@ -1,0 +1,1 @@
+{% with e=componente.estado|lower %}<span class="estado{% if 'operativ' in e or 'ok' in e or 'verificado' in e and 'sin' not in e %} estado-ok{% elif 'sin' in e or 'pendiente' in e %} estado-alerta{% elif 'falla' in e or 'baja' in e or 'daña' in e or 'repar' in e %} estado-error{% endif %}">{{ componente.estado }}</span>{% endwith %}

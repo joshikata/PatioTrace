@@ -1,72 +1,117 @@
-
 {% extends "componentes/base.html" %}
+
+{% block titulo %}Inventario · PatioTrace{% endblock %}
 
 {% block contenido %}
 
-<h1>Panel de componentes</h1>
+<div class="page-head">
+    <div>
+        <h1>Panel de componentes</h1>
+        <p class="subtitulo">Gestión y trazabilidad de componentes de patio</p>
+    </div>
 
-<p class="muted">
-    Gestión y trazabilidad de componentes de patio
-</p>
-
-{% if perms.componentes.add_componente %}
-    <p>
-        <a href="{% url 'registrar_componente' %}"
-           class="btn">
-            + Registrar componente
+    {% if perms.componentes.add_componente %}
+        <a href="{% url 'registrar_componente' %}" class="btn">
+            <svg class="icono" aria-hidden="true"><use href="#i-mas"/></svg>
+            Registrar componente
         </a>
-    </p>
-{% endif %}
-
-<div class="card">
-    <h2>Inventario</h2>
-    <h1>{{ total }}</h1>
-    <p class="muted">Componentes registrados</p>
+    {% endif %}
 </div>
 
-<div class="card">
-    <h2>Buscar componentes</h2>
-
-    <form method="get">
-        <input
-            type="search"
-            name="q"
-            placeholder="Código SAP, serie o descripción"
-            value="{{ busqueda }}"
-        >
-
-        <br><br>
-
-        <button class="btn" type="submit">
-            Buscar
-        </button>
-    </form>
-</div>
-
-<div class="card">
-    <h2>Componentes registrados</h2>
-
-    {% for componente in componentes %}
-        <div class="item">
-            <strong>{{ componente.descripcion }}</strong>
-
-            <p class="muted">
-                SAP:
-                {{ componente.codigo_sap|default:"Sin identificar" }}
-                <br>
-                Ubicación:
-                {{ componente.ubicacion|default:"Sin asignar" }}
-                <br>
-                Estado: {{ componente.estado }}
-            </p>
-
-            <a href="{% url 'detalle_componente' componente.id %}">
-                Ver componente →
-            </a>
+<section class="resumen" aria-label="Resumen">
+    <div class="stat">
+        <svg class="icono" aria-hidden="true"><use href="#i-caja"/></svg>
+        <div>
+            <div class="stat-valor">{{ total }}</div>
+            <div class="stat-etiqueta">Componentes registrados</div>
         </div>
-    {% empty %}
-        <p>No se encontraron componentes.</p>
-    {% endfor %}
-</div>
+    </div>
+    <div class="stat">
+        <svg class="icono" aria-hidden="true"><use href="#i-pin"/></svg>
+        <div>
+            <div class="stat-valor">{{ total_ubicaciones }}</div>
+            <div class="stat-etiqueta">Ubicaciones</div>
+        </div>
+    </div>
+    <div class="stat">
+        <svg class="icono" aria-hidden="true"><use href="#i-mov"/></svg>
+        <div>
+            <div class="stat-valor">{{ total_movimientos }}</div>
+            <div class="stat-etiqueta">Movimientos</div>
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <h2><svg class="icono" aria-hidden="true"><use href="#i-buscar"/></svg> Buscar componentes</h2>
+
+    <form method="get" class="busqueda" role="search">
+        <label for="q" style="position:absolute;left:-9999px">Buscar</label>
+        <input id="q" type="search" name="q"
+               placeholder="Código SAP, serie o descripción"
+               value="{{ busqueda }}">
+        <button class="btn" type="submit">Buscar</button>
+        {% if busqueda %}
+            <a class="btn btn-secundario" href="{% url 'inicio' %}">Limpiar</a>
+        {% endif %}
+    </form>
+</section>
+
+<section class="card">
+    <h2><svg class="icono" aria-hidden="true"><use href="#i-caja"/></svg> Inventario</h2>
+
+    {% if componentes %}
+        <div class="tabla-wrap inventario">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Descripción</th>
+                        <th scope="col">Código SAP</th>
+                        <th scope="col">N° de serie</th>
+                        <th scope="col">Ubicación</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for componente in componentes %}
+                    <tr>
+                        <td><strong>{{ componente.descripcion }}</strong></td>
+                        <td class="mono">{{ componente.codigo_sap|default:"—" }}</td>
+                        <td class="mono">{{ componente.numero_serie|default:"—" }}</td>
+                        <td>{{ componente.ubicacion|default:"Sin asignar" }}</td>
+                        <td>{% include "componentes/_estado.html" %}</td>
+                        <td>
+                            <a href="{% url 'detalle_componente' componente.id %}">
+                                Ver ficha
+                                <svg class="icono" aria-hidden="true"><use href="#i-flecha"/></svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="lista-cards">
+            {% for componente in componentes %}
+            <article class="item-card">
+                <strong class="titulo">{{ componente.descripcion }}</strong>
+                {% include "componentes/_estado.html" %}
+                <dl>
+                    <dt>SAP</dt><dd class="mono">{{ componente.codigo_sap|default:"—" }}</dd>
+                    <dt>Serie</dt><dd class="mono">{{ componente.numero_serie|default:"—" }}</dd>
+                    <dt>Ubicación</dt><dd>{{ componente.ubicacion|default:"Sin asignar" }}</dd>
+                </dl>
+                <a class="btn btn-secundario btn-movil" href="{% url 'detalle_componente' componente.id %}">
+                    Ver ficha
+                </a>
+            </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="muted">No se encontraron componentes.</p>
+    {% endif %}
+</section>
 
 {% endblock %}

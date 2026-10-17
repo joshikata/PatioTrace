@@ -16,7 +16,7 @@ from django.shortcuts import (
 from django.urls import reverse
 
 from .forms import ComponenteForm, MovimientoForm
-from .models import Componente
+from .models import Componente, Movimiento
 from .services import trasladar_componente
 
 
@@ -43,6 +43,11 @@ def inicio(request):
         {
             "componentes": componentes,
             "total": total,
+            "total_ubicaciones": (
+                Componente.objects.exclude(ubicacion="")
+                .values("ubicacion").distinct().count()
+            ),
+            "total_movimientos": Movimiento.objects.count(),
             "busqueda": busqueda,
         }
     )

@@ -1,100 +1,90 @@
-
 {% extends "componentes/base.html" %}
+
+{% block titulo %}{{ componente.descripcion }} · PatioTrace{% endblock %}
 
 {% block contenido %}
 
-<a href="{% url 'inicio' %}" class="muted">
-    ← Volver al inventario
+<a href="{% url 'inicio' %}" class="volver">
+    <svg class="icono" aria-hidden="true"><use href="#i-atras"/></svg>
+    Volver al inventario
 </a>
 
-<h1>{{ componente.descripcion }}</h1>
+<div class="page-head">
+    <div>
+        <h1>{{ componente.descripcion }}</h1>
+        <p class="subtitulo">{% include "componentes/_estado.html" %}</p>
+    </div>
 
-<div class="card">
-    <h2>Información del componente</h2>
-
-    <p>
-        <strong>ID:</strong>
-        {{ componente.id }}
-    </p>
-
-    <p>
-        <strong>Código SAP:</strong>
-        {{ componente.codigo_sap|default:"Sin identificar" }}
-    </p>
-
-    <p>
-        <strong>Número de serie:</strong>
-        {{ componente.numero_serie|default:"Sin identificar" }}
-    </p>
-
-    <p>
-        <strong>Ubicación actual:</strong>
-        {{ componente.ubicacion|default:"Sin asignar" }}
-    </p>
-
-    <p>
-        <strong>Estado:</strong>
-        {{ componente.estado }}
-    </p>
+    {% if perms.componentes.add_movimiento %}
+        <a href="{% url 'registrar_movimiento' componente.id %}" class="btn">
+            <svg class="icono" aria-hidden="true"><use href="#i-mov"/></svg>
+            Registrar traslado
+        </a>
+    {% endif %}
 </div>
 
-<div class="card">
-    <h2>Identificación QR</h2>
+<div class="ficha">
+    <section class="card">
+        <h2><svg class="icono" aria-hidden="true"><use href="#i-caja"/></svg> Información del componente</h2>
 
-    <img
-        class="qr"
-        src="{% url 'generar_qr' componente.id %}"
-        alt="Código QR del componente"
-    >
+        <dl class="datos">
+            <div>
+                <dt>Código SAP</dt>
+                <dd class="mono">{{ componente.codigo_sap|default:"Sin identificar" }}</dd>
+            </div>
+            <div>
+                <dt>Número de serie</dt>
+                <dd class="mono">{{ componente.numero_serie|default:"Sin identificar" }}</dd>
+            </div>
+            <div>
+                <dt>Ubicación actual</dt>
+                <dd>{{ componente.ubicacion|default:"Sin asignar" }}</dd>
+            </div>
+            <div>
+                <dt>Estado</dt>
+                <dd>{{ componente.estado }}</dd>
+            </div>
+            <div class="ancho">
+                <dt>ID</dt>
+                <dd class="mono">{{ componente.id }}</dd>
+            </div>
+        </dl>
+    </section>
 
-    <p class="muted">
-        Identificador único de PatioTrace
-    </p>
+    <section class="card qr-box">
+        <h2><svg class="icono" aria-hidden="true"><use href="#i-qr"/></svg> Identificación QR</h2>
+        <img class="qr" src="{% url 'generar_qr' componente.id %}" alt="Código QR del componente">
+        <p class="muted">Identificador único de PatioTrace</p>
+    </section>
 </div>
 
-{% if perms.componentes.add_movimiento %}
-<div class="card">
-    <h2>Gestión de ubicación</h2>
+<section class="card">
+    <h2><svg class="icono" aria-hidden="true"><use href="#i-reloj"/></svg> Historial de movimientos</h2>
 
-    <a
-        href="{% url 'registrar_movimiento' componente.id %}"
-        class="btn"
-    >
-        Registrar traslado
-    </a>
-</div>
-{% endif %}
-
-<div class="card">
-    <h2>Historial de movimientos</h2>
-
-    {% for movimiento in movimientos %}
-        <div class="item">
-            <strong>
-                {{ movimiento.ubicacion_origen|default:"Sin asignar" }}
-                →
-                {{ movimiento.ubicacion_destino }}
-            </strong>
-
-            <p class="muted">
-                Fecha:
-                {{ movimiento.fecha_movimiento|date:"d/m/Y H:i" }}
-                <br>
-                Usuario:
-                {{ movimiento.usuario.username }}
-            </p>
-
-            {% if movimiento.observacion %}
-                <p>
-                    {{ movimiento.observacion }}
-                </p>
-            {% endif %}
-        </div>
-    {% empty %}
-        <p class="muted">
-            Este componente aún no tiene movimientos registrados.
-        </p>
-    {% endfor %}
-</div>
+    {% if movimientos %}
+        <ol class="timeline">
+            {% for movimiento in movimientos %}
+            <li>
+                <div class="ruta">
+                    <span>{{ movimiento.ubicacion_origen|default:"Sin asignar" }}</span>
+                    <svg class="icono" role="img" aria-label="hacia"><use href="#i-flecha"/></svg>
+                    <span>{{ movimiento.ubicacion_destino }}</span>
+                </div>
+                <div class="meta">
+                    <span><svg class="icono" aria-hidden="true"><use href="#i-reloj"/></svg>
+                        {{ movimiento.fecha_movimiento|date:"d/m/Y H:i" }}</span>
+                    <span><svg class="icono" aria-hidden="true"><use href="#i-usuario"/></svg>
+                        {{ movimiento.usuario.username }}</span>
+                </div>
+                {% if movimiento.observacion %}
+                    <p class="obs">{{ movimiento.observacion }}</p>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <p class="muted">Este componente aún no tiene movimientos registrados.</p>
+    {% endif %}
+</section>
 
 {% endblock %}
